@@ -12,7 +12,7 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "combineer",
+            name: "Combineer",
             targets: ["Combineer"]
         ),
     ],
