@@ -1,0 +1,29 @@
+//
+//  BindingObject.swift
+//
+//
+//  Created by Artem Yelizarov on 4.12.2021.
+//
+
+import Combine
+
+/// Provides conforming values with `bind` method implementation to simplify subscriptions.
+public protocol BindingObject: AnyObject {
+    var cancellables: Set<AnyCancellable> { get set }
+}
+
+extension BindingObject {
+    /// Attaches subscriber with passed handler closures and stores it in `cancellables`.
+    /// - parameter publisher: Publisher to subscribe `self` to.
+    /// - parameter valueHandler: Closure that handles value received from the publisher.
+    /// - parameter completionHandler: Closure that handles completion sent by the publisher.
+    public func bind<BindablePublisher: Publisher>(
+        _ publisher: BindablePublisher,
+        valueHandler: @escaping (BindablePublisher.Output) -> Void,
+        completionHandler: @escaping (Subscribers.Completion<BindablePublisher.Failure>) -> Void = { _ in }
+    ) {
+        publisher
+            .sink(receiveCompletion: completionHandler, receiveValue: valueHandler)
+            .store(in: &cancellables)
+    }
+}
