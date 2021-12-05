@@ -3,7 +3,7 @@ Lightweight collection of helpers and tools to make working with Apple's Combine
 Please feel free to request some nice-to-have features or point out the things that need improvement.
 ## What's included
 ### BindingObject
-Protocol that provides a `bind` method to use instead of the standard `sink`+`store` to make the call sites cleaner.  
+Class-bound protocol that provides a `bind` method to use instead of the standard `sink`+`store` to make call sites cleaner.  
 Example, instead of this
 ```swift5
 somePublisher
@@ -17,3 +17,4 @@ objects that conform to `BindingObject` can now bind the received value as follo
 bind(somePublisher) { [weak self] value in
     self?.doSomething(with: value)
 }
+```
