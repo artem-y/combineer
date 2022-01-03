@@ -6,6 +6,7 @@
 //
 
 import Combine
+import Foundation
 
 /// Provides conforming values with `bind` method implementation to simplify subscriptions.
 public protocol BindingObject: AnyObject {
@@ -25,5 +26,19 @@ extension BindingObject {
         publisher
             .sink(receiveCompletion: completionHandler, receiveValue: valueHandler)
             .store(in: &cancellables)
+    }
+
+    /// Attaches subscriber with passed handler closures, receiving on `DispatchQueue.main` without options
+    /// and stores it in `cancellables`.
+    /// - parameter publisher: Publisher to subscribe `self` to.
+    /// - parameter valueHandler: Closure that handles value received from the publisher.
+    /// - parameter completionHandler: Closure that handles completion sent by the publisher.
+    public func bindOnMainQueue<BindablePublisher: Publisher>(
+        _ publisher: BindablePublisher,
+        valueHandler: @escaping (BindablePublisher.Output) -> Void,
+        completionHandler: @escaping (Subscribers.Completion<BindablePublisher.Failure>) -> Void = { _ in }
+    ) {
+        let publisherOnMainQueue = publisher.receive(on: DispatchQueue.main)
+        bind(publisherOnMainQueue, valueHandler: valueHandler, completionHandler: completionHandler)
     }
 }
