@@ -3,8 +3,8 @@ Lightweight collection of helpers and tools to make working with Apple's Combine
 Please feel free to request some nice-to-have features or point out the things that need improvement.
 ## What's included
 ### BindingObject
-Class-bound protocol that provides a `bind` method to use instead of the standard `sink`+`store` to make call sites cleaner.  
-Example, instead of this
+Class-bound protocol that provides `bind` methods to use instead of the standard `sink`+`store` to make call sites cleaner.  
+For example, instead of this
 ```swift5
 somePublisher
     .sink { [weak self] value in
@@ -18,3 +18,4 @@ bind(somePublisher) { [weak self] value in
     self?.doSomething(with: value)
 }
 ```
+`bindOnMainQueue` accomplishes the same but receives on the `DispatchQueue.main` scheduler.
