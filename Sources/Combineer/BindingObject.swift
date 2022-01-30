@@ -42,6 +42,15 @@ extension BindingObject {
         bind(publisherOnMainQueue, valueHandler: valueHandler, completionHandler: completionHandler)
     }
 
+    /// Attaches the output of a publisher to a subject and stores the subscription in `cancellables.
+    ///
+    /// Example:
+    /// ```
+    ///  bind(publisher, to: subject)
+    /// ```
+    ///
+    /// - parameter publisher: Publisher that will be sending values to subject.
+    /// - parameter subject: Subject that will receive values from the attached publisher.
     public func bind<BindablePublisher: Publisher, ReceivingSubject: Subject>(
         _ publisher: BindablePublisher,
         to subject: ReceivingSubject
