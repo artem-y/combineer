@@ -6,6 +6,7 @@ final class BindingObjectTests: XCTestCase {
     private var sut: MockBindingObject!
     private var stringPulisher: Publishers.Sequence<String, Never>!
     private var stringSubject: PassthroughSubject<String, Never>!
+    private var otherStringSubject: PassthroughSubject<String, Never>!
 
     // MARK: - Lifecycle
 
@@ -13,6 +14,7 @@ final class BindingObjectTests: XCTestCase {
         sut = MockBindingObject()
         stringPulisher = "".publisher
         stringSubject = PassthroughSubject<String, Never>()
+        otherStringSubject = PassthroughSubject<String, Never>()
     }
 
     override func tearDown() {
@@ -44,6 +46,26 @@ final class BindingObjectTests: XCTestCase {
         wait(for: [expectation], timeout: 1)
     }
 
+    func test_bindTo_storesSubscriptionInCancellables() {
+        sut.bind(stringSubject, to: otherStringSubject)
+        XCTAssertEqual(sut.cancellables.count, 1)
+    }
+
+    func test_bindTo_toAnotherSubject_subscribesToThatSubject() {
+        let passedValue = "some text"
+        let expectation = makeReceivedValueExpectation()
+
+        sut.bind(otherStringSubject) { value in
+            XCTAssertEqual(value, passedValue)
+            expectation.fulfill()
+        }
+        sut.bind(stringSubject, to: otherStringSubject)
+
+        stringSubject.send(passedValue)
+
+        wait(for: [expectation], timeout: 1)
+    }
+
     // MARK: - Test bindOnMainQueue
 
     func test_bindOnMainQueue_storesSubscriptionInCancellables() {
@@ -61,6 +83,27 @@ final class BindingObjectTests: XCTestCase {
 
         DispatchQueue.global().async { [weak self] in
             self?.stringSubject.send("123")
+        }
+
+        wait(for: [expectation], timeout: 1)
+    }
+
+    func test_bindOnMainQueueTo_storesSubscriptionInCancellables() {
+        sut.bindOnMainQueue(stringSubject, to: otherStringSubject)
+        XCTAssertEqual(sut.cancellables.count, 1)
+    }
+
+    func test_bindOnMainQueueTo_whenValueSentFromOtherQueue_receivesOnMainQueue() {
+        let expectation = makeReceivedValueExpectation()
+
+        sut.bind(otherStringSubject) { _ in
+            XCTAssert(Thread.current.isMainThread, "Not on main thread.")
+            expectation.fulfill()
+        }
+        sut.bindOnMainQueue(stringSubject, to: otherStringSubject)
+
+        DispatchQueue.global().async {
+            self.stringSubject.send("text")
         }
 
         wait(for: [expectation], timeout: 1)
