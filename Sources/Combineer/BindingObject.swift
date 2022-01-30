@@ -61,4 +61,24 @@ extension BindingObject {
                     .subscribe(subject)
                     .store(in: &cancellables)
             }
+
+    /// Attaches the output of a publisher  received on `DispatchQueue.main` to a subject (without options)
+    /// and stores the subscription in `cancellables.
+    ///
+    /// Example:
+    /// ```
+    ///  bindOnMainQueue(publisher, to: subject)
+    /// ```
+    ///
+    /// - parameter publisher: Publisher that will be sending values to subject.
+    /// - parameter subject: Subject that will receive values from the attached publisher.
+    public func bindOnMainQueue<BindablePublisher: Publisher, ReceivingSubject: Subject>(
+        _ publisher: BindablePublisher,
+        to subject: ReceivingSubject
+    ) where ReceivingSubject.Output == BindablePublisher.Output,
+            ReceivingSubject.Failure == BindablePublisher.Failure {
+
+                let publisher = publisher.receive(on: DispatchQueue.main)
+                bind(publisher, to: subject)
+            }
 }

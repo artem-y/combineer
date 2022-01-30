@@ -87,6 +87,27 @@ final class BindingObjectTests: XCTestCase {
 
         wait(for: [expectation], timeout: 1)
     }
+
+    func test_bindOnMainQueueTo_storesSubscriptionInCancellables() {
+        sut.bindOnMainQueue(stringSubject, to: otherStringSubject)
+        XCTAssertEqual(sut.cancellables.count, 1)
+    }
+
+    func test_bindOnMainQueueTo_whenValueSentFromOtherQueue_receivesOnMainQueue() {
+        let expectation = makeReceivedValueExpectation()
+
+        sut.bind(otherStringSubject) { _ in
+            XCTAssert(Thread.current.isMainThread, "Not on main thread.")
+            expectation.fulfill()
+        }
+        sut.bindOnMainQueue(stringSubject, to: otherStringSubject)
+
+        DispatchQueue.global().async {
+            self.stringSubject.send("text")
+        }
+
+        wait(for: [expectation], timeout: 1)
+    }
 }
 
 // MARK: - Private Methods
