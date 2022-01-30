@@ -6,6 +6,7 @@ final class BindingObjectTests: XCTestCase {
     private var sut: MockBindingObject!
     private var stringPulisher: Publishers.Sequence<String, Never>!
     private var stringSubject: PassthroughSubject<String, Never>!
+    private var otherStringSubject: PassthroughSubject<String, Never>!
 
     // MARK: - Lifecycle
 
@@ -13,6 +14,7 @@ final class BindingObjectTests: XCTestCase {
         sut = MockBindingObject()
         stringPulisher = "".publisher
         stringSubject = PassthroughSubject<String, Never>()
+        otherStringSubject = PassthroughSubject<String, Never>()
     }
 
     override func tearDown() {
@@ -40,6 +42,26 @@ final class BindingObjectTests: XCTestCase {
         DispatchQueue.main.async { [weak self] in
             self?.stringSubject.send(passedValue)
         }
+
+        wait(for: [expectation], timeout: 1)
+    }
+
+    func test_bindTo_storesSubscriptionInCancellables() {
+        sut.bind(stringSubject, to: otherStringSubject)
+        XCTAssertEqual(sut.cancellables.count, 1)
+    }
+
+    func test_bindTo_toAnotherSubject_subscribesToThatSubject() {
+        let passedValue = "some text"
+        let expectation = makeReceivedValueExpectation()
+
+        sut.bind(otherStringSubject) { value in
+            XCTAssertEqual(value, passedValue)
+            expectation.fulfill()
+        }
+        sut.bind(stringSubject, to: otherStringSubject)
+
+        stringSubject.send(passedValue)
 
         wait(for: [expectation], timeout: 1)
     }

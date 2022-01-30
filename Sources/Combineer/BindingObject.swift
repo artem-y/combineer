@@ -41,4 +41,15 @@ extension BindingObject {
         let publisherOnMainQueue = publisher.receive(on: DispatchQueue.main)
         bind(publisherOnMainQueue, valueHandler: valueHandler, completionHandler: completionHandler)
     }
+
+    public func bind<BindablePublisher: Publisher, ReceivingSubject: Subject>(
+        _ publisher: BindablePublisher,
+        to subject: ReceivingSubject
+    ) where ReceivingSubject.Output == BindablePublisher.Output,
+            ReceivingSubject.Failure == BindablePublisher.Failure {
+
+                publisher
+                    .subscribe(subject)
+                    .store(in: &cancellables)
+            }
 }
