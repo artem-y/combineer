@@ -19,6 +19,7 @@ bind(somePublisher) { [weak self] value in
 }
 ```
 `bindOnMainQueue` accomplishes the same but receives on the `DispatchQueue.main` scheduler.  
+
 `bind(_:, to:)` and `bindOnMainQueue(_:, to:)` methods allow passing the value of a publisher to a subject:  
 ```
 bind(myPublisher, to: mySubject)
